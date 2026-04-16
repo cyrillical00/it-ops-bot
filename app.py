@@ -215,9 +215,6 @@ _EX_INCIDENT = {
 for _k in ("it_result", "access_result", "incident_result"):
     if _k not in st.session_state:
         st.session_state[_k] = None
-for _k in ("it_prefill", "access_prefill", "incident_prefill"):
-    if _k not in st.session_state:
-        st.session_state[_k] = False
 
 
 # ── Page header ───────────────────────────────────────────────────────────────
@@ -246,28 +243,22 @@ with tab_it:
     with left:
         st.subheader("IT Request")
         if st.button("Pre-fill with example", key="it_btn_prefill"):
-            st.session_state.it_prefill = True
-        pf = st.session_state.it_prefill
+            st.session_state.it_subject = _EX_IT["subject"]
+            st.session_state.it_desc    = _EX_IT["description"]
+            st.session_state.it_urgency = _EX_IT["urgency"]
+            st.session_state.it_dept    = _EX_IT["department"]
 
         subject = st.text_input(
             "Subject", key="it_subject",
-            value=_EX_IT["subject"] if pf else "",
             placeholder="One-line summary of the issue",
         )
         description = st.text_area(
             "Description", key="it_desc",
-            value=_EX_IT["description"] if pf else "",
             height=140, max_chars=2000,
             placeholder="What's happening? What have you tried?",
         )
-        urgency = st.selectbox(
-            "Urgency", _URGENCY, key="it_urgency",
-            index=_URGENCY.index(_EX_IT["urgency"]) if pf else 0,
-        )
-        department = st.selectbox(
-            "Department", _DEPARTMENT, key="it_dept",
-            index=_DEPARTMENT.index(_EX_IT["department"]) if pf else 0,
-        )
+        urgency = st.selectbox("Urgency", _URGENCY, key="it_urgency")
+        department = st.selectbox("Department", _DEPARTMENT, key="it_dept")
 
         if st.button("Submit Request", type="primary", use_container_width=True,
                      key="it_submit", disabled=remaining == 0):
@@ -333,27 +324,23 @@ with tab_access:
     with left:
         st.subheader("Access Request")
         if st.button("Pre-fill with example", key="access_btn_prefill"):
-            st.session_state.access_prefill = True
-        pf = st.session_state.access_prefill
+            st.session_state.access_app   = _EX_ACCESS["app_name"]
+            st.session_state.access_level = _EX_ACCESS["access_level"]
+            st.session_state.access_just  = _EX_ACCESS["justification"]
+            st.session_state.access_mgr   = _EX_ACCESS["manager"]
 
         app_name = st.text_input(
             "Application", key="access_app",
-            value=_EX_ACCESS["app_name"] if pf else "",
             placeholder="e.g. Salesforce, AWS, GitHub",
         )
-        access_level = st.selectbox(
-            "Access Level", _ACCESS, key="access_level",
-            index=_ACCESS.index(_EX_ACCESS["access_level"]) if pf else 0,
-        )
+        access_level = st.selectbox("Access Level", _ACCESS, key="access_level")
         justification = st.text_area(
             "Justification", key="access_just",
-            value=_EX_ACCESS["justification"] if pf else "",
             height=120, max_chars=1000,
             placeholder="Why do you need this access?",
         )
         manager = st.text_input(
             "Manager Name", key="access_mgr",
-            value=_EX_ACCESS["manager"] if pf else "",
             placeholder="Your direct manager",
         )
 
@@ -428,26 +415,22 @@ with tab_incident:
     with left:
         st.subheader("Incident Declaration")
         if st.button("Pre-fill with example", key="inc_btn_prefill"):
-            st.session_state.incident_prefill = True
-        pf = st.session_state.incident_prefill
+            st.session_state.inc_title    = _EX_INCIDENT["title"]
+            st.session_state.inc_severity = _EX_INCIDENT["severity"]
+            st.session_state.inc_systems  = _EX_INCIDENT["systems"]
+            st.session_state.inc_desc     = _EX_INCIDENT["description"]
 
         title = st.text_input(
             "Title", key="inc_title",
-            value=_EX_INCIDENT["title"] if pf else "",
             placeholder="One-line incident summary",
         )
-        severity = st.selectbox(
-            "Severity", _SEVERITY, key="inc_severity",
-            index=_SEVERITY.index(_EX_INCIDENT["severity"]) if pf else 0,
-        )
+        severity = st.selectbox("Severity", _SEVERITY, key="inc_severity")
         systems = st.text_input(
             "Systems Affected", key="inc_systems",
-            value=_EX_INCIDENT["systems"] if pf else "",
             placeholder="e.g. api-gateway, postgres, auth-service",
         )
         description = st.text_area(
             "Description", key="inc_desc",
-            value=_EX_INCIDENT["description"] if pf else "",
             height=160, max_chars=2000,
             placeholder="What's happening? What have you observed?",
         )
