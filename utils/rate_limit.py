@@ -4,6 +4,7 @@ Uses a module-level dict — resets on server restart, which is acceptable
 for a demo tool on Streamlit Community Cloud.
 """
 
+import os
 from collections import defaultdict
 from datetime import date
 
@@ -13,16 +14,34 @@ DAILY_LIMIT = 5
 _log: dict[str, list[str]] = defaultdict(list)
 
 
+def _trusted_hops() -> int:
+    """Number of reverse proxies in front of the app that append to X-Forwarded-For.
+
+    Assumes Streamlit Community Cloud: one load balancer appends the address it
+    saw as the right-most X-Forwarded-For entry. Anything to its left is
+    client-supplied and must not be trusted. Override with TRUSTED_PROXY_HOPS.
+    """
+    try:
+        return max(1, int(os.environ.get("TRUSTED_PROXY_HOPS", "1")))
+    except ValueError:
+        return 1
+
+
+def client_ip_from_headers(headers) -> str:
+    """Pick the client IP from the right-most trusted hop of X-Forwarded-For."""
+    lowered = {str(k).lower(): v for k, v in dict(headers).items()}
+    forwarded = lowered.get("x-forwarded-for", "")
+    parts = [p.strip() for p in forwarded.split(",") if p.strip()]
+    if parts:
+        hops = _trusted_hops()
+        return parts[-hops] if len(parts) >= hops else parts[0]
+    return "unknown"
+
+
 def get_client_ip() -> str:
     try:
         import streamlit as st
-        headers = st.context.headers
-        forwarded = headers.get("X-Forwarded-For", "")
-        if forwarded:
-            return forwarded.split(",")[0].strip()
-        real_ip = headers.get("X-Real-IP", "")
-        if real_ip:
-            return real_ip
+        return client_ip_from_headers(st.context.headers)
     except Exception:
         pass
     return "unknown"
